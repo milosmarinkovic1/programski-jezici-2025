@@ -10,4 +10,6 @@ public class ProgramskiJezici2025Application {
 		SpringApplication.run(ProgramskiJezici2025Application.class, args);
 	}
 
+
+
 }
