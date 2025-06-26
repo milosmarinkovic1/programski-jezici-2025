@@ -1,10 +1,10 @@
-package rs.ac.singidunum.repository;
+package rs.ac.singidunum.repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import rs.ac.singidunum.entitet.planovi_treninga;
+import rs.ac.singidunum.entity.planovi_treninga;
 import java.util.List;
-@Repository
 
+@Repository
 public interface planovi_treningaRepository extends JpaRepository<planovi_treninga,Integer> {
 
     List<planovi_treninga> findAllByDeletedAtIsNull();

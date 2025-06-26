@@ -1,4 +1,4 @@
-package rs.ac.singidunum.entitet;
+package rs.ac.singidunum.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 public class planovi_treninga {
 
     @Entity
-    @Table(name = "financial_data") // Pretpostavljeno ime tabele
-    public class FinancialData {
+    @Table(name = "treningbp")
+    public class TreningBP {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
