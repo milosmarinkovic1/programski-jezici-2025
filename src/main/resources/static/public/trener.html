@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Treneri</title>
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-light">
+
+<!-- navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/public/index.html">Trening App</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/public/index.html">Planovi treninga</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/public/trener.html">Treneri</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/public/vezba.html">Vežbe</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1 class="mb-4">Treneri</h1>
+
+    <!-- forma -->
+    <div class="card p-3 mb-4">
+        <h5>Dodaj trenera</h5>
+        <form id="trenerForm">
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">Ime</label>
+                    <input type="text" class="form-control" id="ime" required>
+                </div>
+                <div class="col">
+                    <label class="form-label">Prezime</label>
+                    <input type="text" class="form-control" id="prezime" required>
+                </div>
+                <div class="col">
+                    <label class="form-label">Specijalnost</label>
+                    <input type="text" class="form-control" id="specijalnost" required>
+                </div>
+                <div class="col">
+                    <label class="form-label">Kontakt</label>
+                    <input type="email" class="form-control" id="kontakt" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Sačuvaj trenera</button>
+        </form>
+    </div>
+
+    <!-- tabela -->
+    <table class="table table-striped" id="trenerTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ime</th>
+            <th>Prezime</th>
+            <th>Specijalnost</th>
+            <th>Kontakt</th>
+            <th>Akcije</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const trenerApi = "/api/treneri";
+let editTrenerId = null;
+
+function loadTreneri() {
+    axios.get(trenerApi)
+        .then(response => {
+            const data = response.data;
+            const tbody = document.querySelector("#trenerTable tbody");
+            tbody.innerHTML = "";
+            data.forEach(trener => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${trener.trenerId}</td>
+                    <td>${trener.ime}</td>
+                    <td>${trener.prezime}</td>
+                    <td>${trener.specijalnost}</td>
+                    <td>${trener.kontakt}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editTrener(${trener.trenerId})">Izmeni</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTrener(${trener.trenerId})">Obriši</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(error => console.error("Greška prilikom učitavanja:", error));
+}
+
+function deleteTrener(id) {
+    if (confirm("Da li ste sigurni?")) {
+        axios.delete(`${trenerApi}/${id}`)
+            .then(() => loadTreneri())
+            .catch(error => console.error("Greška prilikom brisanja:", error));
+    }
+}
+
+function editTrener(id) {
+    axios.get(`${trenerApi}/${id}`)
+        .then(response => {
+            const trener = response.data;
+            document.getElementById("ime").value = trener.ime;
+            document.getElementById("prezime").value = trener.prezime;
+            document.getElementById("specijalnost").value = trener.specijalnost;
+            document.getElementById("kontakt").value = trener.kontakt;
+            editTrenerId = id;
+        })
+        .catch(error => console.error("Greška prilikom dohvat:", error));
+}
+
+document.getElementById("trenerForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const trener = {
+        ime: document.getElementById("ime").value,
+        prezime: document.getElementById("prezime").value,
+        specijalnost: document.getElementById("specijalnost").value,
+        kontakt: document.getElementById("kontakt").value
+    };
+
+    if (editTrenerId == null) {
+        axios.post(trenerApi, trener)
+            .then(() => {
+                loadTreneri();
+                this.reset();
+            })
+            .catch(error => console.error("Greška prilikom čuvanja:", error));
+    } else {
+        axios.put(`${trenerApi}/${editTrenerId}`, trener)
+            .then(() => {
+                loadTreneri();
+                this.reset();
+                editTrenerId = null;
+            })
+            .catch(error => console.error("Greška prilikom izmene:", error));
+    }
+});
+
+loadTreneri();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Planovi treninga</title>
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-light">
+
+<!-- navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand">Trening App</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/public/index.html">Planovi treninga</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/public/trener.html">Treneri</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/public/vezba.html">Vežbe</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1 class="mb-4">Planovi treninga</h1>
+
+    <!-- forma -->
+    <div class="card p-3 mb-4">
+        <h5>Dodaj novi plan</h5>
+        <form id="planForm">
+            <div class="row">
+                <div class="col">
+                    <label for="trenerId" class="form-label">Trener ID</label>
+                    <input type="number" class="form-control" id="trenerId" required min="0">
+                </div>
+                <div class="col">
+                    <label for="vezbaId" class="form-label">Vežba ID</label>
+                    <input type="number" class="form-control" id="vezbaId" required min="0">
+                </div>
+                <div class="col">
+                    <label for="pauza" class="form-label">Pauza (s)</label>
+                    <input type="number" class="form-control" id="pauza" required min="0">
+                </div>
+                <div class="col">
+                    <label for="vreme" class="form-label">Vreme nastanka</label>
+                    <input type="datetime-local" class="form-control" id="vreme" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Sačuvaj plan</button>
+        </form>
+    </div>
+
+    <!-- tabela -->
+    <table class="table table-striped" id="planTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Trener</th>
+            <th>Vežba</th>
+            <th>Pauza</th>
+            <th>Vreme nastanka</th>
+            <th>Akcije</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const apiUrl = "/api/planovi";
+let editId = null;
+
+function loadPlans() {
+    axios.get(apiUrl)
+        .then(response => {
+            const data = response.data;
+            const tbody = document.querySelector("#planTable tbody");
+            tbody.innerHTML = "";
+            data.forEach(plan => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${plan.planId}</td>
+                    <td>${plan.trenerId}</td>
+                    <td>${plan.vezbaId}</td>
+                    <td>${plan.pauza}</td>
+                    <td>${plan.vremeNastanka}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editPlan(${plan.planId})">Izmeni</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletePlan(${plan.planId})">Obriši</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(error => console.error("Greška prilikom učitavanja:", error));
+}
+
+function deletePlan(id) {
+    if (confirm("Da li ste sigurni?")) {
+        axios.delete(`${apiUrl}/${id}`)
+            .then(() => loadPlans())
+            .catch(error => console.error("Greška prilikom brisanja:", error));
+    }
+}
+
+function editPlan(id) {
+    axios.get(`${apiUrl}/${id}`)
+        .then(response => {
+            const plan = response.data;
+            document.getElementById("trenerId").value = plan.trenerId;
+            document.getElementById("vezbaId").value = plan.vezbaId;
+            document.getElementById("pauza").value = plan.pauza;
+            document.getElementById("vreme").value = plan.vremeNastanka.substring(0,16); // datetime-local
+            editId = id;
+        })
+        .catch(error => console.error("Greška prilikom dohvatanja:", error));
+}
+
+document.getElementById("planForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const plan = {
+        trenerId: document.getElementById("trenerId").value,
+        vezbaId: document.getElementById("vezbaId").value,
+        pauza: document.getElementById("pauza").value,
+        vremeNastanka: document.getElementById("vreme").value
+    };
+
+    if (editId == null) {
+        // novi
+        axios.post(apiUrl, plan)  // Ako je novi vrsi se POST!!!
+            .then(() => {
+                loadPlans();
+                this.reset();
+            })
+            .catch(error => console.error("Greška prilikom čuvanja:", error));
+    } else {
+        // izmena
+        axios.put(`${apiUrl}/${editId}`, plan)   // Ako je izmena vrsi se PUT!!!
+            .then(() => {
+                loadPlans();
+                this.reset();
+                editId = null;
+            })
+            .catch(error => console.error("Greška prilikom izmene:", error));
+    }
+});
+
+loadPlans();
+
+</script>
+
+</body>
+</html>
