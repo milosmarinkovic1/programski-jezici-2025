@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@RestController  // vraca nam json odgovore umesto html view-a
 @RequestMapping("/api/planovi")
 public class PlanTreningaController {
 
