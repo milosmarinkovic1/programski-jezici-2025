@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController  // vraca nam json odgovore umesto html view-a
-@RequestMapping("/api/planovi")
+@RequestMapping("/api/planovi") //putanjA
 public class PlanTreningaController {
 
     @Autowired
@@ -20,7 +20,7 @@ public class PlanTreningaController {
         return planRepo.findAll();
     }
 
-    @PostMapping
+    @PostMapping  // prima json
     public PlanTreninga create(@RequestBody PlanTreninga plan) {
         return planRepo.save(plan);
     }
